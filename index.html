@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roue de Noël Personnalisée</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: url('Roue Noel.jpg') no-repeat center center fixed;
+            background-size: cover;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .wheel {
+            margin: 10px;
+        }
+
+        canvas {
+            border: 2px solid #fff;
+            border-radius: 50%;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .result {
+            margin-top: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px;
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            background-color: #e8f5e9;
+            width: 200px;
+        }
+
+        .top-right {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 3;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .popup-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .password-container {
+            margin: 20px 0;
+        }
+
+        #passwordInput {
+            padding: 10px;
+            font-size: 16px;
+            width: 200px;
+            margin-bottom: 20px;
+        }
+
+        #accessButton {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button id="customizeButton" class="top-right">Personnaliser</button>
+        <div class="wheel">
+            <canvas id="wheelCanvas" width="300" height="300"></canvas>
+            <div id="result" class="result">Résultat: ?</div>
+            <button id="spinButton">Tourner</button>
+        </div>
+    </div>
+
+    <div id="popup" class="popup">
+        <div class="popup-content">
+            <h2>Entrez le mot de passe pour accéder à la personnalisation</h2>
+            <div class="password-container">
+                <input type="password" id="passwordInput" placeholder="Mot de passe">
+                <button id="accessButton">Accéder</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="popupContent" class="popup">
+        <div class="popup-content">
+            <h2>Personnalisez les cadeaux</h2>
+            <div class="wheel-settings">
+                <label for="gift1">Cadeau 1 :</label><input type="text" id="gift1" value="50€ 🤑"><br>
+                <label for="gift2">Cadeau 2 :</label><input type="text" id="gift2" value="Lunch Anais 🍔"><br>
+                <label for="gift3">Cadeau 3 :</label><input type="text" id="gift3" value="100€ 🤑"><br>
+                <label for="gift4">Cadeau 4 :</label><input type="text" id="gift4" value="Pins 🥕"><br>
+                <label for="gift5">Cadeau 5 :</label><input type="text" id="gift5" value="30€ 🤑"><br>
+                <label for="gift6">Cadeau 6 :</label><input type="text" id="gift6" value="Cadeau  🎁"><br>
+                <label for="gift7">Cadeau 7 :</label><input type="text" id="gift7" value="100€ 🤑"><br>
+                <label for="gift8">Cadeau 8 :</label><input type="text" id="gift8" value="Lunch Offert 🍔"><br>
+                <label for="gift9">Cadeau 9 :</label><input type="text" id="gift9" value="30€ 🤑"><br>
+                <label for="gift10">Cadeau 10 :</label><input type="text" id="gift10" value="Training Pierre"><br>
+                <label for="gift11">Cadeau 11 :</label><input type="text" id="gift11" value="30€ 🤑"><br>
+                <label for="gift12">Cadeau 12 :</label><input type="text" id="gift12" value="3€/sem ILS/Y"><br>
+            </div>
+            <button id="saveButton">Sauvegarder</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+    <script>
+        emailjs.init("hoz22gRCGAh20qkjt");
+
+        function drawWheel(canvasId, colors, gifts) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext("2d");
+            const segments = gifts.length;
+            const arc = (2 * Math.PI) / segments;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            gifts.forEach((gift, i) => {
+                const angle = i * arc;
+                ctx.beginPath();
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.moveTo(150, 150);
+                ctx.arc(150, 150, 150, angle, angle + arc);
+                ctx.fill();
+
+                ctx.save();
+                ctx.translate(150, 150);
+                ctx.rotate(angle + arc / 2);
+                ctx.fillStyle = "black";
+                ctx.textAlign = "center";
+                ctx.font = "14px Arial";
+                ctx.fillText(gift, 100, 10);
+                ctx.restore();
+            });
+
+            ctx.beginPath();
+            ctx.arc(150, 150, 30, 0, 2 * Math.PI);
+            ctx.fillStyle = "#ffffff";
+            ctx.fill();
+        }
+
+        function spinWheel() {
+            const canvas = document.getElementById("wheelCanvas");
+            const ctx = canvas.getContext("2d");
+            const gifts = Array.from({ length: 12 }, (_, i) => document.getElementById(`gift${i + 1}`).value);
+            let angle = 0;
+            const spinTime = Math.random() * 3000 + 2000;
+            const spinInterval = 20;
+
+            const interval = setInterval(() => {
+                angle += 20 * Math.PI / 180;
+                drawWheel("wheelCanvas", ["#F0E68C", "#D1E8E2"], gifts);
+                ctx.translate(150, 150);
+                ctx.rotate(angle);
+                ctx.translate(-150, -150);
+            }, spinInterval);
+
+            setTimeout(() => {
+                clearInterval(interval);
+                const resultIndex = Math.floor(Math.random() * gifts.length);
+                document.getElementById("result").textContent = `Résultat: ${gifts[resultIndex]}`;
+                // Envoi de l'e-mail avec le score
+                sendEmail(gifts[resultIndex]);
+            }, spinTime);
+        }
+
+        function sendEmail(result) {
+            // Logic to send email
+        }
+
+        document.getElementById("customizeButton").addEventListener("click", () => {
+            document.getElementById("popup").style.display = "flex";
+        });
+
+        document.getElementById("accessButton").addEventListener("click", () => {
+            const password = document.getElementById("passwordInput").value;
+            if (password === "weareeffrance") {
+                document.getElementById("popup").style.display = "none";
+                document.getElementById("popupContent").style.display = "flex";
+            } else {
+                alert("Mot de passe incorrect !");
+            }
+        });
+
+        document.getElementById("saveButton").addEventListener("click", () => {
+            const gifts = Array.from({ length: 12 }, (_, i) => document.getElementById(`gift${i + 1}`).value);
+            drawWheel("wheelCanvas", ["#F0E68C", "#D1E8E2"], gifts);
+            document.getElementById("popupContent").style.display = "none";
+        });
+
+        drawWheel("wheelCanvas", ["#F0E68C", "#D1E8E2"], Array.from({ length: 12 }, (_, i) => document.getElementById(`gift${i + 1}`).value));
+        document.getElementById("spinButton").addEventListener("click", spinWheel);
+    </script>
+</body>
+</html>
