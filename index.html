@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Center Roue MW04</title>
+    <title>Sales_center_roue</title>
     <style>
         body {
             margin: 0;
@@ -12,12 +12,6 @@
             background: url('MW04.png') no-repeat center center fixed;
             background-size: cover;
             overflow: hidden;
-        }
-
-        .container {
-            text-align: center;
-            position: relative;
-            z-index: 2;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -27,6 +21,10 @@
 
         .wheel {
             margin: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
         }
 
         canvas {
@@ -34,7 +32,7 @@
             border-radius: 50%;
         }
 
-        button {
+        .result, #spinButton {
             margin-top: 20px;
             padding: 10px 20px;
             font-size: 16px;
@@ -46,7 +44,6 @@
         }
 
         .result {
-            margin-top: 10px;
             font-size: 18px;
             font-weight: bold;
             padding: 10px;
@@ -54,18 +51,7 @@
             border-radius: 10px;
             background-color: #e8f5e9;
             width: 200px;
-        }
-
-        .top-right {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            text-align: center;
         }
 
         .popup {
@@ -88,18 +74,18 @@
             text-align: center;
         }
 
-        .password-container {
+        .password-container, .wheel-settings {
             margin: 20px 0;
         }
 
-        #passwordInput {
+        #passwordInput, #numSegments {
             padding: 10px;
             font-size: 16px;
             width: 200px;
             margin-bottom: 20px;
         }
 
-        #accessButton {
+        #accessButton, #saveButton {
             padding: 10px 20px;
             background-color: #4CAF50;
             color: white;
@@ -107,6 +93,12 @@
             cursor: pointer;
             border: none;
             border-radius: 5px;
+        }
+
+        .top-right {
+            position: absolute;
+            top: 20px;
+            right: 20px;
         }
     </style>
 </head>
@@ -132,28 +124,28 @@
 
     <div id="popupContent" class="popup">
         <div class="popup-content">
-            <h2>Personnalisez les cadeaux</h2>
+            <h2>Personnalisez la roue</h2>
             <div class="wheel-settings">
-                <label for="gift1">Cadeau 1 :</label><input type="text" id="gift1" value="50€ 🤑"><br>
-                <label for="gift2">Cadeau 2 :</label><input type="text" id="gift2" value="Lunch Anais 🍔"><br>
-                <label for="gift3">Cadeau 3 :</label><input type="text" id="gift3" value="100€ 🤑"><br>
-                <label for="gift4">Cadeau 4 :</label><input type="text" id="gift4" value="Pins 🥕"><br>
-                <label for="gift5">Cadeau 5 :</label><input type="text" id="gift5" value="30€ 🤑"><br>
-                <label for="gift6">Cadeau 6 :</label><input type="text" id="gift6" value="Cadeau  🎁"><br>
-                <label for="gift7">Cadeau 7 :</label><input type="text" id="gift7" value="100€ 🤑"><br>
-                <label for="gift8">Cadeau 8 :</label><input type="text" id="gift8" value="Lunch Offert 🍔"><br>
-                <label for="gift9">Cadeau 9 :</label><input type="text" id="gift9" value="30€ 🤑"><br>
-                <label for="gift10">Cadeau 10 :</label><input type="text" id="gift10" value="Training Pierre"><br>
-                <label for="gift11">Cadeau 11 :</label><input type="text" id="gift11" value="30€ 🤑"><br>
-                <label for="gift12">Cadeau 12 :</label><input type="text" id="gift12" value="3€/sem ILS/Y"><br>
+                <label for="numSegments">Nombre de cases :</label>
+                <input type="number" id="numSegments" min="1" max="20" value="12">
+                <div id="giftsContainer">
+                    <!-- Champs pour les cadeaux seront ajoutés dynamiquement ici -->
+                </div>
+                <button id="addGiftButton">Ajouter un cadeau</button>
+                <button id="saveButton">Sauvegarder</button>
             </div>
-            <button id="saveButton">Sauvegarder</button>
         </div>
     </div>
 
     <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
     <script>
         emailjs.init("hoz22gRCGAh20qkjt");
+
+        const defaultGifts = [
+            "Origami Kit ✂️", "Frame 🖼️", "Note Book 📗", "Monthly Planner 📅", "Note Book 📙", 
+            "Sock 🍕🍩", "Cucumber Mask 🥒", "Rose 🌹", "Surprise Bag", "Magic beans 🌱", 
+            "Toy 🔫", "Beach Racket 🏓", "Hang Grip 🏋️", "Head Massager 💆‍♀️"
+        ];
 
         function drawWheel(canvasId, colors, gifts) {
             const canvas = document.getElementById(canvasId);
@@ -190,7 +182,7 @@
         function spinWheel() {
             const canvas = document.getElementById("wheelCanvas");
             const ctx = canvas.getContext("2d");
-            const gifts = Array.from({ length: 12 }, (_, i) => document.getElementById(`gift${i + 1}`).value);
+            const gifts = Array.from(document.querySelectorAll(".gift-input"), input => input.value);
             let angle = 0;
             const spinTime = Math.random() * 3000 + 2000;
             const spinInterval = 20;
@@ -212,9 +204,49 @@
             }, spinTime);
         }
 
-        function sendEmail(result) {
-            // Logic to send email
+        function updateGiftFields() {
+            const numSegments = document.getElementById("numSegments").value;
+            const giftsContainer = document.getElementById("giftsContainer");
+            giftsContainer.innerHTML = "";
+            for (let i = 0; i < numSegments; i++) {
+                createGiftField(giftsContainer, i, defaultGifts[i] || `Cadeau ${i + 1}`);
+            }
         }
+
+        function createGiftField(container, index, value) {
+            const giftWrapper = document.createElement("div");
+            giftWrapper.classList.add("gift-wrapper");
+
+            const giftInput = document.createElement("input");
+            giftInput.type = "text";
+            giftInput.classList.add("gift-input");
+            giftInput.value = value;
+            giftWrapper.appendChild(giftInput);
+
+            const deleteCheckbox = document.createElement("input");
+            deleteCheckbox.type = "checkbox";
+            deleteCheckbox.classList.add("delete-checkbox");
+            deleteCheckbox.addEventListener("change", () => {
+                if (deleteCheckbox.checked) {
+                    giftWrapper.remove();
+                    updateNumSegments();
+                }
+            });
+            giftWrapper.appendChild(deleteCheckbox);
+
+            container.appendChild(giftWrapper);
+        }
+
+        function updateNumSegments() {
+            document.getElementById("numSegments").value = document.querySelectorAll(".gift-input").length;
+        }
+
+        document.getElementById("numSegments").addEventListener("input", updateGiftFields);
+
+        document.getElementById("addGiftButton").addEventListener("click", () => {
+            createGiftField(document.getElementById("giftsContainer"), document.querySelectorAll(".gift-input").length, "");
+            updateNumSegments();
+        });
 
         document.getElementById("customizeButton").addEventListener("click", () => {
             document.getElementById("popup").style.display = "flex";
@@ -231,13 +263,16 @@
         });
 
         document.getElementById("saveButton").addEventListener("click", () => {
-            const gifts = Array.from({ length: 12 }, (_, i) => document.getElementById(`gift${i + 1}`).value);
+            const gifts = Array.from(document.querySelectorAll(".gift-input"), input => input.value);
             drawWheel("wheelCanvas", ["#F0E68C", "#D1E8E2"], gifts);
             document.getElementById("popupContent").style.display = "none";
         });
 
-        drawWheel("wheelCanvas", ["#F0E68C", "#D1E8E2"], Array.from({ length: 12 }, (_, i) => document.getElementById(`gift${i + 1}`).value));
+        drawWheel("wheelCanvas", ["#F0E68C", "#D1E8E2"], defaultGifts);
         document.getElementById("spinButton").addEventListener("click", spinWheel);
+
+        // Initialiser les champs des cadeaux
+        updateGiftFields();
     </script>
 </body>
 </html>
